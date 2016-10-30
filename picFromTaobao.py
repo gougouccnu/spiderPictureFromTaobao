@@ -131,27 +131,31 @@ def makedir(path, folder):
 	if os.path.isdir(path + '/' + folder):
 		return
 	else:
-		os.mkdir(path + '/' + folder)
+		os.makedirs(path + '/' + folder)
 
-
-
-if __name__ == "__main__":
-	FILE_NAME = 'articleTest12.csv'
-	path = '/Users/lishaowei/Documents/picFromTaobao/downloadPic'
+def getPicFromShop(shopUrl, path):
 	itemNum = 0
-
 	browser = webdriver.Firefox()
-	browser.get('https://wanglinhong168.taobao.com/category-867174786.htm?spm=a1z10.5-c-s.0.0.edd8BF&search=y&categoryp=50008899&scid=867174786')
-
+	browser.get(shopUrl)
+	shopName = browser.find_element_by_xpath("//span[@class='shop-name']").find_element_by_tag_name('a').text
+	
 	itemUrlList = getItemsUrl(browser)
 	for itemUrl in itemUrlList:
 		browser2 = webdriver.Firefox()
 		browser2.get(itemUrl)
-		makedir(path, str(itemNum))
-		getPictures(browser2, path, str(itemNum))
+		makedir(path + '/' + shopName, str(itemNum))
+		getPictures(browser2, path + '/' + shopName, str(itemNum))
 		browser2.quit()
 		itemNum = itemNum + 1
 	browser.quit()
+
+
+if __name__ == "__main__":
+
+	path = '/Users/lishaowei/Documents/picFromTaobao/downloadPic'
+	shopUrl = 'https://wanglinhong168.taobao.com/category-867174786.htm?spm=a1z10.5-c-s.0.0.edd8BF&search=y&categoryp=50008899&scid=867174786'
+
+	getPicFromShop(shopUrl, path)
 
 	# with open(FILE_NAME, 'w') as csvfile:
 	# 	    fieldnames = ['id', 'author', 'cid', 'readTimes', 'comments', 'likes', 'donate', 'tag', 'authorIconUrl', 'pictureUrl', 'title', 'articleUrl', 'articleObjId']
