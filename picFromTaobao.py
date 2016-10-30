@@ -9,14 +9,16 @@ import os
 
 def getItemsUrl(driver):
 	itemUrlList = []
-	div = driver.find_element_by_xpath("//div[@class='item3line1']")
-	for dl in div.find_elements_by_tag_name('dl'):
-		try:
-			itemUrl = dl.find_element_by_class_name('detail').find_element_by_tag_name('a').get_attribute('href')
-			print(itemUrl)
-			itemUrlList.append(itemUrl)
-		except NoSuchElementException as e:
-			print('except:', e)
+	div = driver.find_element_by_xpath("//div[@class='shop-hesper-bd grid']")
+	items = div.find_elements_by_class_name('item3line1')
+	for item in items:
+		for dl in item.find_elements_by_tag_name('dl'):
+			try:
+				itemUrl = dl.find_element_by_class_name('detail').find_element_by_tag_name('a').get_attribute('href')
+				print(itemUrl)
+				itemUrlList.append(itemUrl)
+			except NoSuchElementException as e:
+				print('except:', e)
 	return itemUrlList
 
 def getImgBigSrc(imgSrc):
