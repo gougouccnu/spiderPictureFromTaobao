@@ -7,6 +7,11 @@ import urllib.request
 import os.path
 import os
 
+import argparse
+import re
+from multiprocessing import Pool
+import io
+
 def getItemsUrl(driver):
 	itemUrlList = []
 	div = driver.find_element_by_xpath("//div[@class='shop-hesper-bd grid']")
@@ -133,10 +138,12 @@ def makedir(path, folder):
 	else:
 		os.makedirs(path + '/' + folder)
 
-def getPicFromShop(shopUrl, path):
+def getPicFromShop(shopUrl):
+	global path
 	itemNum = 0
 	browser = webdriver.Firefox()
 	browser.get(shopUrl)
+
 	shopName = browser.find_element_by_xpath("//span[@class='shop-name']").find_element_by_tag_name('a').text
 	
 	itemUrlList = getItemsUrl(browser)
@@ -147,15 +154,26 @@ def getPicFromShop(shopUrl, path):
 		getPictures(browser2, path + '/' + shopName, str(itemNum))
 		browser2.quit()
 		itemNum = itemNum + 1
+		#if itemNum == 3:
+		#	return
 	browser.quit()
 
 
 if __name__ == "__main__":
 
+
 	path = '/Users/lishaowei/Documents/picFromTaobao/downloadPic'
 	shopUrl = 'https://wanglinhong168.taobao.com/category-867174786.htm?spm=a1z10.5-c-s.0.0.edd8BF&search=y&categoryp=50008899&scid=867174786'
+	shopUrl2 = 'https://yanerjia.taobao.com/category-529814247.htm?spm=2013.1.0.0.txHE7z&search=y&catName=2016%B6%AC%D7%B0%D0%C2%BF%EE'
+	pool = Pool(4)
+	shopUrlList = [
+		shopUrl, 
+		shopUrl2
+	]
 
-	getPicFromShop(shopUrl, path)
+	pool.map(getPicFromShop, shopUrlList)
+
+	#getPicFromShop(shopUrl2)
 
 	# with open(FILE_NAME, 'w') as csvfile:
 	# 	    fieldnames = ['id', 'author', 'cid', 'readTimes', 'comments', 'likes', 'donate', 'tag', 'authorIconUrl', 'pictureUrl', 'title', 'articleUrl', 'articleObjId']
