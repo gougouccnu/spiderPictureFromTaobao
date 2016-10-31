@@ -39,7 +39,15 @@ def saveImg(path, url, name):
 	except e:
 		print(e)
 
-def getPictures(driver, path, folder):
+def saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc):
+	with open(FILE_NAME, 'a') as csvfile:
+		fieldnames = ['itemUrl', 'imgBigUrl']
+		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+		writer.writerow({'itemUrl': itemUrl, 'imgBigUrl': imgBigSrc})
+				
+
+def getPictures(driver, path, folder, itemUrl):
+	global FILE_NAME
 	ul = driver.find_element_by_xpath("//ul[@class='tb-thumb tb-clearfix']")
 	i = 0
 	for li in ul.find_elements_by_tag_name('li'):
@@ -50,6 +58,7 @@ def getPictures(driver, path, folder):
 			print('After convert:\n')
 			print(imgBigSrc)
 			saveImg(path + '/' + folder, imgBigSrc, str(i) + '.jpg')
+			saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
 		except NoSuchElementException as e:
 			print('except:', e)
 			imgSrc = ''
@@ -151,16 +160,21 @@ def getPicFromShop(shopUrl):
 		browser2 = webdriver.Firefox()
 		browser2.get(itemUrl)
 		makedir(path + '/' + shopName, str(itemNum))
-		getPictures(browser2, path + '/' + shopName, str(itemNum))
+		getPictures(browser2, path + '/' + shopName, str(itemNum), itemUrl)
 		browser2.quit()
 		itemNum = itemNum + 1
-		#if itemNum == 3:
-		#	return
+		if itemNum == 2:
+			return
 	browser.quit()
 
 
 if __name__ == "__main__":
 
+	FILE_NAME = 'picInf1.csv'
+	with open(FILE_NAME, 'w') as csvfile:
+		fieldnames = ['itemUrl', 'imgBigUrl']
+		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+		writer.writeheader()
 
 	path = '/Users/lishaowei/Documents/picFromTaobao/downloadPic'
 	shopUrl = 'https://wanglinhong168.taobao.com/category-867174786.htm?spm=a1z10.5-c-s.0.0.edd8BF&search=y&categoryp=50008899&scid=867174786'
