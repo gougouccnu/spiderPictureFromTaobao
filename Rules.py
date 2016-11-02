@@ -26,7 +26,9 @@ class Rules(Singleton):
 		self.d[key] = value
 
 	def loadValue(self, key):
-		if self.d.has_key(key):
+		#list(self.d.keys())
+		if key in self.d:
+		#if self.d.has_key(key):
 			value = self.d[key]
 			return value
 		else:

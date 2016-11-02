@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,6 +12,8 @@ import argparse
 import re
 from multiprocessing import Pool
 import io
+from Rules import *
+from accessBmobPy3 import *
 
 def getItemsUrl(driver):
 	itemUrlList = []
@@ -45,9 +48,22 @@ def saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc):
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		writer.writerow({'itemUrl': itemUrl, 'imgBigUrl': imgBigSrc})
 				
+def saveImgToBmob(USER_ID, imgBigUrl, itemUrl):
+	url = 'api.bmob.cn'
+	table = 'picInf'
+	
+	totalData = json.dumps({
+		"picUrl":imgBigUrl, 
+		"itemUrl":itemUrl, 
+		"user":{"__type":"Pointer","className":"_User","objectId":USER_ID}
+		})
+	postToBmob(url, table, totalData)
 
 def getPictures(driver, path, folder, itemUrl):
+	rules = Rules()
 	global FILE_NAME
+	USER_ID = 'JLkR444G'
+
 	ul = driver.find_element_by_xpath("//ul[@class='tb-thumb tb-clearfix']")
 	i = 0
 	for li in ul.find_elements_by_tag_name('li'):
@@ -57,8 +73,13 @@ def getPictures(driver, path, folder, itemUrl):
 			imgBigSrc = getImgBigSrc(imgSrc)
 			print('After convert:\n')
 			print(imgBigSrc)
-			saveImg(path + '/' + folder, imgBigSrc, str(i) + '.jpg')
-			saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
+			# 如果为新照片，就保存
+			if rules.loadValue(imgBigSrc) != 'saved':
+				saveImg(path + '/' + folder, imgBigSrc, str(i) + '.jpg')
+				saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
+				saveImgToBmob(USER_ID, imgBigSrc, itemUrl)
+				# 保存到数据库
+				rules.saveRule(imgBigSrc, 'saved')
 		except NoSuchElementException as e:
 			print('except:', e)
 			imgSrc = ''
@@ -67,11 +88,11 @@ def getPictures(driver, path, folder, itemUrl):
 
 
 def find(driver):
-    element = driver.find_element_by_xpath("//ul[@class='article-list thumbnails']")
-    if element:
-        return element
-    else:
-        return False
+	element = driver.find_element_by_xpath("//ul[@class='article-list thumbnails']")
+	if element:
+		return element
+	else:
+		return False
 
 def getArticles(FILE_NAME, browser, cid):
 
@@ -163,7 +184,7 @@ def getPicFromShop(shopUrl):
 		getPictures(browser2, path + '/' + shopName, str(itemNum), itemUrl)
 		browser2.quit()
 		itemNum = itemNum + 1
-		if itemNum == 2:
+		if itemNum == 3:
 			return
 	browser.quit()
 
