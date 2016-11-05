@@ -55,7 +55,8 @@ def saveImgToBmob(USER_ID, imgBigUrl, itemUrl):
 	totalData = json.dumps({
 		"picUrl":imgBigUrl, 
 		"itemUrl":itemUrl, 
-		"user":{"__type":"Pointer","className":"_User","objectId":USER_ID}
+		"user":{"__type":"Pointer","className":"_User","objectId":USER_ID},
+		"starter":{"__type":"Pointer","className":"_User","objectId":"none"}
 		})
 	postToBmob(url, table, totalData)
 
@@ -184,7 +185,7 @@ def getPicFromShop(shopUrl):
 		getPictures(browser2, path + '/' + shopName, str(itemNum), itemUrl)
 		browser2.quit()
 		itemNum = itemNum + 1
-		if itemNum == 3:
+		if itemNum == 300:
 			return
 	browser.quit()
 
