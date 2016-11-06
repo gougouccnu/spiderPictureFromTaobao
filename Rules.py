@@ -14,9 +14,9 @@ class Singleton(object):
 
 
 class Rules(Singleton):
-	def __init__(self):
+	def __init__(self, filename):
 		super(Rules, self).__init__()
-		self.filename = 'rulesDB'
+		self.filename = filename
 		self.d = shelve.open(self.filename)
 
 	def saveRule(self, key, value):

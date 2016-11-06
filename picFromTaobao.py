@@ -2,6 +2,7 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import *
 import csv
 import time
 import urllib.request
@@ -189,6 +190,37 @@ def getPicFromShop(shopUrl):
 			return
 	browser.quit()
 
+def getNewItems():
+	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
+	lookMoreClassName = 'item-list-more-btn J_PopRecTrigLink J_NewPoint'
+	browser = webdriver.Firefox()
+	browser.get(femalFavalUrl)
+
+	userName = 'tb6196862_2010'
+	password = 'baobao&jinzi0913'
+	browser.find_element_by_id('TPL_username_1').send_keys(userName)
+	browser.find_element_by_id('TPL_password_1').send_keys(password)
+	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
+	#lookMoreClasses = browser.find_elements_by_class_name('J_FavListItem fav-shop clearfix')
+	lookMoreClasses = browser.find_elements_by_link_text('查看更多')
+	#browser.find
+	for lookMore in lookMoreClasses:
+		lookMoreUrl = lookMore.get_attribute('href')
+		print(lookMoreUrl)
+		print('*'*9)
+		browser2 = webdriver.Firefox()
+		browser2.get(lookMoreUrl)
+		browser2.find_element_by_id('TPL_username_1').send_keys(userName)
+		browser2.find_element_by_id('TPL_password_1').send_keys(password)
+		browser2.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
+		favList = browser2.find_element_by_xpath("//li[@class='J_FavListItem g-gi-item fav-item']")
+		#favList = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
+		
+		print(favList.text)
+		browser2.quit()
+
+
+
 
 if __name__ == "__main__":
 
@@ -207,7 +239,9 @@ if __name__ == "__main__":
 		shopUrl2
 	]
 
-	pool.map(getPicFromShop, shopUrlList)
+	#pool.map(getPicFromShop, shopUrlList)
+	getNewItems()
+
 
 	#getPicFromShop(shopUrl2)
 
