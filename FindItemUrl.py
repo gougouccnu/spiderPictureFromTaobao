@@ -1,6 +1,8 @@
 import pickle
 import time
+from builtins import print
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import *
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -8,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from Rules import *
 
 def findAllShopNewItemUrl():
+	global cookies
 	allShopNewItemUrlList = []
 
 	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
@@ -23,9 +26,9 @@ def findAllShopNewItemUrl():
 	print(browser.get_cookies())
 	cookies = browser.get_cookies()
 
-	for page in range(10):
+	for page in range(2):
 		# scroll down to bottom
-		for i in range(4):
+		for i in range(5):
 			browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 			time.sleep(3) # seconds
 			print('scroll down to get more shop')
@@ -45,7 +48,11 @@ def saveAllShopNewItemUrl():
 
 
 def findTodayNewItem(allShopNewItemUrlList, cookies):
+	newItemUrlList = []
+
 	for lookMoreUrl in allShopNewItemUrlList:
+		print('lookMoreUrl:')
+		print(lookMoreUrl)
 		browser2 = webdriver.Firefox()
 		browser2.get(lookMoreUrl)
 		for cookie in cookies:
@@ -56,10 +63,30 @@ def findTodayNewItem(allShopNewItemUrlList, cookies):
 		# browser2.quit()
 		# 找到 上新日期 
 		time.sleep(2)
-		shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
-	
-		print(shangxinDate.text)
-		browser2.quit()
+		#shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
+		try:
+			shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
+			print(shangxinDate.text)
+			#newItemUrlClassList = browser2.find_elements_by_xpath("//*[starts-with(name(), 'J_FavListItem g-gi-item fav-item fav-item-promotion')]")
+			newItemUrlClassList = browser2.find_elements_by_xpath("//div[@class='img-controller-img-box']")
+			if len(newItemUrlClassList) == 0:
+				print('not match new item url')
+			print('begint to find new itemUrl')
+			for newItemUrlClass in newItemUrlClassList:
+				print('find new itemUrl')
+				newItemUrl = newItemUrlClass.find_element_by_tag_name('a').get_attribute('href')
+				print(newItemUrl)
+				newItemUrlList.append(newItemUrl)
+			browser2.quit()
+
+		except NoSuchElementException as e:
+			print('except:', e)
+			browser2.quit()
+		#//*[starts-with(name(),'B')]
+		#//*[contains(name(),'B')]
+	print(newItemUrlList)
+	return newItemUrlList
+
 
 # 保存item的URL 
 def saveAllItemUrl(allShopNewItemUrlList):
@@ -68,9 +95,13 @@ def saveAllItemUrl(allShopNewItemUrlList):
 	#店铺收藏
 	# https://shoucang.taobao.com/shop_gallery_n.htm?spm=a1z0k.7385961.1997985009.1.cdcsr0&tab=4&cat=4&id=103845551&sellerId=1676877261&t=1478395652000
 if __name__ == '__main__':
+	cookies = ''
 	allShopNewItemUrlList = findAllShopNewItemUrl()
 	print(allShopNewItemUrlList)
 
-	rules = Rules("allShopNewItemUrl")
+	findTodayNewItem(allShopNewItemUrlList, cookies)
+
+	rules = Rules()
 	for itemUrl in allShopNewItemUrlList:
 		rules.saveRule(itemUrl, "saved")
+
