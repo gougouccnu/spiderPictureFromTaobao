@@ -71,6 +71,7 @@ def findTodayNewItem(allShopNewItemUrlList, cookies):
 
 			#newItemUrlClassList = browser2.find_elements_by_xpath("//*[starts-with(name(), 'J_FavListItem g-gi-item fav-item fav-item-promotion')]")
 			newItemUrlClassList = browser2.find_elements_by_xpath("//div[@class='img-controller-img-box']")
+			# save all the new item url,TODO: save new item by date
 			if len(newItemUrlClassList) >= 1 and shangxinDate.text.startswith('今天'):
 				newItemCnt = int(shangXin.text.split()[-1], 10)
 				print('begint to find new itemUrl')
@@ -82,6 +83,9 @@ def findTodayNewItem(allShopNewItemUrlList, cookies):
 			browser2.quit()
 
 		except NoSuchElementException as e:
+			print('except:', e)
+			browser2.quit()
+		except IndexError as e:
 			print('except:', e)
 			browser2.quit()
 		#//*[starts-with(name(),'B')]
