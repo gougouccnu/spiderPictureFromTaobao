@@ -59,7 +59,8 @@ def findTodayNewItem(allShopNewItemUrlList, cookies):
 			browser2.add_cookie(cookie)
 		browser2.get(lookMoreUrl)
 		# 找到 上新 按钮
-		shangXin = browser2.find_element_by_xpath("//ul[@class='gallery-album-menu-list clearfix']").find_element_by_tag_name('li').click()
+		shangXin = browser2.find_element_by_xpath("//ul[@class='gallery-album-menu-list clearfix']").find_element_by_tag_name('li')
+		shangXin.click()
 		# browser2.quit()
 		# 找到 上新日期 
 		time.sleep(2)
@@ -67,16 +68,17 @@ def findTodayNewItem(allShopNewItemUrlList, cookies):
 		try:
 			shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
 			print(shangxinDate.text)
+
 			#newItemUrlClassList = browser2.find_elements_by_xpath("//*[starts-with(name(), 'J_FavListItem g-gi-item fav-item fav-item-promotion')]")
 			newItemUrlClassList = browser2.find_elements_by_xpath("//div[@class='img-controller-img-box']")
-			if len(newItemUrlClassList) == 0:
-				print('not match new item url')
-			print('begint to find new itemUrl')
-			for newItemUrlClass in newItemUrlClassList:
-				print('find new itemUrl')
-				newItemUrl = newItemUrlClass.find_element_by_tag_name('a').get_attribute('href')
-				print(newItemUrl)
-				newItemUrlList.append(newItemUrl)
+			if len(newItemUrlClassList) >= 1 and shangxinDate.text.startswith('今天'):
+				newItemCnt = int(shangXin.text.split()[-1], 10)
+				print('begint to find new itemUrl')
+				for i in range(newItemCnt):
+					print('find new itemUrl')
+					newItemUrl = newItemUrlClassList[i].find_element_by_tag_name('a').get_attribute('href')
+					print(newItemUrl)
+					newItemUrlList.append(newItemUrl)
 			browser2.quit()
 
 		except NoSuchElementException as e:
@@ -89,19 +91,30 @@ def findTodayNewItem(allShopNewItemUrlList, cookies):
 
 
 # 保存item的URL 
-def saveAllItemUrl(allShopNewItemUrlList):
+def saveAllNewItemUrl(allShopNewItemUrlList):
+	pass
+
+def saveAllShopCollectUrl(allShopNewItemUrlList):
 	pass
 
 	#店铺收藏
 	# https://shoucang.taobao.com/shop_gallery_n.htm?spm=a1z0k.7385961.1997985009.1.cdcsr0&tab=4&cat=4&id=103845551&sellerId=1676877261&t=1478395652000
 if __name__ == '__main__':
 	cookies = ''
+	allShopNewItemUrlList = []
+	allNewItemUrlList = []
+
 	allShopNewItemUrlList = findAllShopNewItemUrl()
 	print(allShopNewItemUrlList)
 
-	findTodayNewItem(allShopNewItemUrlList, cookies)
+	allNewItemUrlList = findTodayNewItem(allShopNewItemUrlList, cookies)
 
-	rules = Rules()
+	shopCollectUrlFile = Rules('ShopCollectUrl')
+	newItemUrlFile = Rules('newItemUrl')
+
 	for itemUrl in allShopNewItemUrlList:
-		rules.saveRule(itemUrl, "saved")
+		shopCollectUrlFile.saveRule(itemUrl, "saved")
+	for newItemUrl in allNewItemUrlList:
+		shopCollectUrlFile.saveRule(newItemUrl, "saved")
+
 
