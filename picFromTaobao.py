@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+import logging
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -65,8 +66,12 @@ def getPictures(driver, itemUrl):
 	rules = Rules('test')
 	global FILE_NAME
 	USER_ID = 'JLkR444G'
-
-	ul = driver.find_element_by_xpath("//ul[@class='tb-thumb tb-clearfix']")
+	logging.debug('try to get pictures from URL: %s ', itemUrl)
+	try:
+		ul = driver.find_element_by_xpath("//ul[@class='tb-thumb tb-clearfix']")
+	except NoSuchElementException as e:
+		print('not match pic url')
+		return
 	i = 0
 	for li in ul.find_elements_by_tag_name('li'):
 		try:
@@ -78,12 +83,15 @@ def getPictures(driver, itemUrl):
 			# 如果为新照片，就保存
 			if rules.loadValue(imgBigSrc) != 'saved':
 				#saveImg(path + '/' + folder, imgBigSrc, str(i) + '.jpg')
-				saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
+				#saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
 				saveImgToBmob(USER_ID, imgBigSrc, itemUrl)
 				# 保存到数据库
 				rules.saveRule(imgBigSrc, 'saved')
+			else:
+				logging.debug('had been saved')
 		except NoSuchElementException as e:
 			print('except:', e)
+			logging.debug('NoSuchElementException occur: %s ', e.msg)
 			imgSrc = ''
 		i = i +1 
 
@@ -102,9 +110,11 @@ def makedir(subFolder):
 	else:
 		os.makedirs(os.getcwd() + '/' + subFolder)
 
-def getPicUrlFromItemUrl(itemUrlList, shopName):
+def getPicUrlFromItemUrl(itemUrlList):
 	itemNum = 0
 	for itemUrl in itemUrlList:
+		print('item url:')
+		print(itemUrl)
 		browser2 = webdriver.Firefox()
 		browser2.get(itemUrl)
 		makedir(str(itemNum))
@@ -115,7 +125,6 @@ def getPicUrlFromItemUrl(itemUrlList, shopName):
 			return
 
 def getPicFromShop(shopUrl):
-	global path
 	browser = webdriver.Firefox()
 	browser.get(shopUrl)
 
@@ -165,7 +174,8 @@ if __name__ == "__main__":
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		writer.writeheader()
 
-	path = '/Users/lishaowei/Documents/picFromTaobao/downloadPic'
+	logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
+
 	shopUrl = 'https://wanglinhong168.taobao.com/category-867174786.htm?spm=a1z10.5-c-s.0.0.edd8BF&search=y&categoryp=50008899&scid=867174786'
 	shopUrl2 = 'https://yanerjia.taobao.com/category-529814247.htm?spm=2013.1.0.0.txHE7z&search=y&catName=2016%B6%AC%D7%B0%D0%C2%BF%EE'
 	pool = Pool(4)
@@ -174,8 +184,8 @@ if __name__ == "__main__":
 		shopUrl2
 	]
 
-	# pool.map(getPicFromShop, shopUrlList)
-	# getNewItems()
+	pool.map(getPicFromShop, shopUrlList)
+	#getNewItems()
 
-	itemUrlList = ['https://item.taobao.com/item.htm?id=540063089204&_u=', 'https://item.taobao.com/item.htm?id=540061720286&_u=']
-	getPicUrlFromItemUrl(itemUrlList, 'testItemUrlList')
+	# itemUrlList = ['https://item.taobao.com/item.htm?id=540063089204&_u=', 'https://item.taobao.com/item.htm?id=540061720286&_u=']
+	# getPicUrlFromItemUrl(itemUrlList, 'testItemUrlList')

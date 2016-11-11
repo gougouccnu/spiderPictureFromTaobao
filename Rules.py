@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 import shelve
+import logging
 
 # 实现__new__方法来实现单例类
 #并在将一个类的实例绑定到类变量_instance上,
@@ -29,6 +30,7 @@ class Rules(Singleton):
 		# else:
 		if key in self.d:
 			print('key existed!')
+			logging.debug('key %s existed.', key)
 			return
 		self.d[key] = value
 
@@ -40,7 +42,11 @@ class Rules(Singleton):
 			return value
 		else:
 			print('load Error:key ' + key + ' don\'t exist')
+			logging.debug('save key %s', key)
 			return None
+
+	def getAllKeysList(self):
+		return list(self.d.keys())
 
 	def close(self):
 		self.d.close()
