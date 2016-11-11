@@ -84,7 +84,7 @@ def getPictures(driver, itemUrl):
 			if rules.loadValue(imgBigSrc) != 'saved':
 				#saveImg(path + '/' + folder, imgBigSrc, str(i) + '.jpg')
 				#saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
-				saveImgToBmob(USER_ID, imgBigSrc, itemUrl)
+				#saveImgToBmob(USER_ID, imgBigSrc, itemUrl)
 				# 保存到数据库
 				rules.saveRule(imgBigSrc, 'saved')
 			else:
@@ -110,22 +110,16 @@ def makedir(subFolder):
 	else:
 		os.makedirs(os.getcwd() + '/' + subFolder)
 
-def getPicUrlFromItemUrl(itemUrlList):
-	itemNum = 0
-	for itemUrl in itemUrlList:
-		print('item url:')
-		print(itemUrl)
-		browser2 = webdriver.Firefox()
-		browser2.get(itemUrl)
-		makedir(str(itemNum))
-		getPictures(browser2, itemUrl)
-		browser2.quit()
-		itemNum = itemNum + 1
-		if itemNum == 300:
-			return
+def getPicUrlFromItemUrl(itemUrl):
+	print('item url:')
+	print(itemUrl)
+	browser2 = webdriver.PhantomJS()
+	browser2.get(itemUrl)
+	getPictures(browser2, itemUrl)
+	browser2.quit()
 
 def getPicFromShop(shopUrl):
-	browser = webdriver.Firefox()
+	browser = webdriver.PhantomJS()
 	browser.get(shopUrl)
 
 	shopName = browser.find_element_by_xpath("//span[@class='shop-name']").find_element_by_tag_name('a').text
@@ -137,7 +131,7 @@ def getPicFromShop(shopUrl):
 def getNewItems():
 	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
 	lookMoreClassName = 'item-list-more-btn J_PopRecTrigLink J_NewPoint'
-	browser = webdriver.Firefox()
+	browser = webdriver.PhantomJS()
 	browser.get(femalFavalUrl)
 
 	userName = 'tb6196862_2010'
@@ -152,7 +146,7 @@ def getNewItems():
 		lookMoreUrl = lookMore.get_attribute('href')
 		print(lookMoreUrl)
 		print('*'*9)
-		browser2 = webdriver.Firefox()
+		browser2 = webdriver.PhantomJS()
 		browser2.get(lookMoreUrl)
 		browser2.find_element_by_id('TPL_username_1').send_keys(userName)
 		browser2.find_element_by_id('TPL_password_1').send_keys(password)
@@ -180,7 +174,7 @@ if __name__ == "__main__":
 	shopUrl2 = 'https://yanerjia.taobao.com/category-529814247.htm?spm=2013.1.0.0.txHE7z&search=y&catName=2016%B6%AC%D7%B0%D0%C2%BF%EE'
 	pool = Pool(4)
 	shopUrlList = [
-		shopUrl, 
+		shopUrl,
 		shopUrl2
 	]
 

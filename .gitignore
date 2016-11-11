@@ -1,1 +1,8 @@
 /downloadPic
+*.log
+*.json
+*.pyc
+*.db
+*.csv
+.idea/
+__pycache__/
