@@ -11,21 +11,38 @@ from selenium.webdriver.support import expected_conditions as EC
 from Rules import *
 from picFromTaobao import *
 
-def findAllShopNewItemUrl():
-	allShopNewItemUrlList = []
+cookies = []
+
+
+def getCookies():
 
 	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
-	lookMoreClassName = 'item-list-more-btn J_PopRecTrigLink J_NewPoint'
-	browser = webdriver.PhantomJS()
+	# browser = webdriver.PhantomJS()
+	browser = webdriver.Firefox()
 	browser.get(femalFavalUrl)
-
 	userName = 'tb6196862_2010'
 	password = 'baobao&jinzi0913'
+	try:
+		browser.find_element_by_class_name('forget-pwd J_Quick2Static').send_keys(Keys.ENTER)
+	except NoSuchElementException as e:
+		print('login error')
+
 	browser.find_element_by_id('TPL_username_1').send_keys(userName)
 	browser.find_element_by_id('TPL_password_1').send_keys(password)
 	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
 	print(browser.get_cookies())
 	cookies = browser.get_cookies()
+	return browser, cookies
+
+
+def findAllShopNewItemUrl():
+	global cookies
+	import shelve
+	lookMoreUrlFile = shelve.open('lookMoreUrlFile')
+	allShopNewItemUrlList = []
+
+	browser, cookies = getCookies()
+
 
 	for page in range(100):
 		# scroll down to bottom
@@ -46,47 +63,52 @@ def findAllShopNewItemUrl():
 			print('except:', e)
 			logging.debug('get the last page %s, find %s shop item URL', page, len(allShopNewItemUrlList))
 			break
+	browser.quit()
 
-	return allShopNewItemUrlList, cookies
+	for allShopNewItemUrl in allShopNewItemUrlList:
+		if not allShopNewItemUrl in lookMoreUrlFile.keys():
+			lookMoreUrlFile[allShopNewItemUrl] = 'saved'
 
-
-def saveAllShopNewItemUrl():
-	pass
-
-
-def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile):
+def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 	print('lookMoreUrl:')
 	print(lookMoreUrl)
-	browser2 = webdriver.PhantomJS()
+	#browser = webdriver.PhantomJS()
+	browser = webdriver.Firefox()
+	#browser.add_cookie(cookies)
 	# browser2.get(lookMoreUrl)
 	# for cookie in cookies:
 	# 	browser2.add_cookie(cookie)
-	browser2.get(lookMoreUrl)
+	browser.get(lookMoreUrl)
 	userName = 'tb6196862_2010'
 	password = 'baobao&jinzi0913'
-	browser2.find_element_by_id('TPL_username_1').send_keys(userName)
-	browser2.find_element_by_id('TPL_password_1').send_keys(password)
-	browser2.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
+	try:
+		browser.find_element_by_class_name('forget-pwd J_Quick2Static').send_keys(Keys.ENTER)
+	except NoSuchElementException as e:
+		print('login error')
+
+	browser.find_element_by_id('TPL_username_1').send_keys(userName)
+	browser.find_element_by_id('TPL_password_1').send_keys(password)
+	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
 	time.sleep(2)
 	try:
 		# 找到 上新 按钮
-		shangXin = browser2.find_element_by_xpath(
+		shangXin = browser.find_element_by_xpath(
 			"//ul[@class='gallery-album-menu-list clearfix']").find_element_by_tag_name('li')
 		shangXin.click()
 	# browser2.quit()
 	# 找到 上新日期
 	except NoSuchElementException as e:
 		print('shangXin url not matched')
-		browser2.quit()
+		browser.quit()
 
 	time.sleep(2)
 	# shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
 	try:
-		shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
+		shangxinDate = browser.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
 		print(shangxinDate.text)
 
 		#newItemUrlClassList = browser2.find_elements_by_xpath("//*[starts-with(name(), 'J_FavListItem g-gi-item fav-item fav-item-promotion')]")
-		newItemUrlClassList = browser2.find_elements_by_xpath("//div[@class='img-controller-img-box']")
+		newItemUrlClassList = browser.find_elements_by_xpath("//div[@class='img-controller-img-box']")
 		# save all the new item url,TODO: save new item by date
 		if len(newItemUrlClassList) >= 1 and shangxinDate.text.startswith('今天'):
 			newItemCnt = int(shangXin.text.split()[-1], 10)
@@ -96,83 +118,40 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile):
 				newItemUrl = newItemUrlClassList[i].find_element_by_tag_name('a').get_attribute('href')
 				print(newItemUrl)
 				# TODO: save new item url
-				newItemUrlFile[newItemUrl] = 'saved'
-		browser2.quit()
+				if not newItemUrl in newItemUrlFile.keys():
+					newItemUrlFile[newItemUrl] = 'isToday'
+		else:
+			print('Today no new item.')
+		browser.quit()
 
 	except NoSuchElementException as e:
 		print('no shangxin')
 		print('except:', e)
-		browser2.quit()
+		browser.quit()
 	except IndexError as e:
 		print('except:', e)
-		browser2.quit()
+		browser.quit()
 
 def findTodayNewItem(lookMoreUrl):
 
 	import shelve
 	newItemUrlFile = shelve.open('newItemUrl')
-	#
-	# femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
-	# browser = webdriver.PhantomJS()
-	# browser.get(femalFavalUrl)
-	#
-	# userName = 'tb6196862_2010'
-	# password = 'baobao&jinzi0913'
-	# browser.find_element_by_id('TPL_username_1').send_keys(userName)
-	# browser.find_element_by_id('TPL_password_1').send_keys(password)
-	# browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
-	# print(browser.get_cookies())
-	# cookies = browser.get_cookies()
+	with open('cookies.pickle', 'rb') as f:
+		cookies = pickle.load(f)
 
-	saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile)
+	saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies)
 
-
-# 保存item的URL
-def saveAllNewItemUrl(allShopNewItemUrlList):
-	pass
-
-def saveAllShopCollectUrl(allShopNewItemUrlList):
-	pass
-
-	#店铺收藏
-	# https://shoucang.taobao.com/shop_gallery_n.htm?spm=a1z0k.7385961.1997985009.1.cdcsr0&tab=4&cat=4&id=103845551&sellerId=1676877261&t=1478395652000
 if __name__ == '__main__':
 
-	allShopNewItemUrlList = []
-	allNewItemUrlList = []
-	shopCollectUrlFile = Rules('ShopCollectUrl')
+	browser, cookies = getCookies()
+	print(cookies)
 
-	import shelve
-	newItemUrlFile = shelve.open('newItemUrl')
+	import pickle
+	with open('cookies.pickle', 'wb') as f:
+		pickle.dump(cookies, f)
 
-	logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
-
-	print(shopCollectUrlFile.loadValue('https://item.taobao.com/item.htm?id=539898810329&_u='))
-
-	allShopNewItemUrlList, cookies = findAllShopNewItemUrl()
-	print(allShopNewItemUrlList)
-	for itemUrl in allShopNewItemUrlList:
-		shopCollectUrlFile.saveRule(itemUrl, "saved")
-
-	print(len(shopCollectUrlFile.getAllKeysList()))
-
-
-	allShopNewItemUrlList = shopCollectUrlFile.getAllKeysList()
-	allNewItemUrlList = findTodayNewItem(allShopNewItemUrlList)
-
-	for newItemUrl in allNewItemUrlList:
-		print(newItemUrl)
-		newItemUrlFile[newItemUrl] = "saved"
-
-	from multiprocessing import Pool
-	pool = Pool(4)
-
-	start = time.time()
-	allNewItemUrlList = list(newItemUrlFile.keys())
-	print(len(allNewItemUrlList))
-	pool.map(getPicUrlFromItemUrl, allNewItemUrlList)
-	end = time.time()
-	print('use: ' + str(end - start))
-	#getPicUrlFromItemUrl(allNewItemUrlList)
+	with open('cookies.pickle', 'rb') as f:
+		data = pickle.load(f)
+		print(data)
 
 

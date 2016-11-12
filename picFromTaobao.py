@@ -16,6 +16,7 @@ from multiprocessing import Pool
 import io
 from Rules import *
 from accessBmobPy3 import *
+from Rules import *
 
 def getItemsUrl(driver):
 	itemUrlList = []
@@ -62,17 +63,15 @@ def saveImgToBmob(USER_ID, imgBigUrl, itemUrl):
 		})
 	postToBmob(url, table, totalData)
 
-def getPictures(driver, itemUrl):
-	rules = Rules('test')
-	global FILE_NAME
-	USER_ID = 'JLkR444G'
+def getPicturesUrl(driver, itemUrl):
+	picturesUrlList = []
+
 	logging.debug('try to get pictures from URL: %s ', itemUrl)
 	try:
 		ul = driver.find_element_by_xpath("//ul[@class='tb-thumb tb-clearfix']")
 	except NoSuchElementException as e:
 		print('not match pic url')
 		return
-	i = 0
 	for li in ul.find_elements_by_tag_name('li'):
 		try:
 			imgSrc = li.find_element_by_tag_name('img').get_attribute('src')
@@ -80,43 +79,45 @@ def getPictures(driver, itemUrl):
 			imgBigSrc = getImgBigSrc(imgSrc)
 			print('After convert:\n')
 			print(imgBigSrc)
-			# 如果为新照片，就保存
-			if rules.loadValue(imgBigSrc) != 'saved':
-				#saveImg(path + '/' + folder, imgBigSrc, str(i) + '.jpg')
-				#saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc)
-				#saveImgToBmob(USER_ID, imgBigSrc, itemUrl)
-				# 保存到数据库
-				rules.saveRule(imgBigSrc, 'saved')
-			else:
-				logging.debug('had been saved')
+			picturesUrlList.append(imgBigSrc)
 		except NoSuchElementException as e:
 			print('except:', e)
 			logging.debug('NoSuchElementException occur: %s ', e.msg)
-			imgSrc = ''
-		i = i +1 
 
+	return picturesUrlList
 
+def PostNewPicturesUrl(driver, itemUrl):
 
-def find(driver):
-	element = driver.find_element_by_xpath("//ul[@class='article-list thumbnails']")
-	if element:
-		return element
-	else:
-		return False
+	import shelve
+	picturesUrlFile = shelve.open('picturesUrlFile')
+	USER_ID = 'JLkR444G'
+	logging.debug('try to get pictures from URL: %s ', itemUrl)
 
-def makedir(subFolder):
-	if os.path.isdir(os.getcwd() + '/' + subFolder):
+	picturesUrlList = getPicturesUrl(driver, itemUrl)
+	print(picturesUrlList)
+	if picturesUrlList == None:
 		return
-	else:
-		os.makedirs(os.getcwd() + '/' + subFolder)
+	for picturesUrl in picturesUrlList:
+		if picturesUrl in picturesUrlFile.keys():
+			if picturesUrlFile[picturesUrl] == 'uploaded':
+				logging.debug('had been post to bmob')
+				print('had been post to bmob')
+				return
+		#saveImgToBmob(USER_ID, picturesUrl, itemUrl)
+		# 保存到数据库
+		print('faked post to bmob')
+		picturesUrlFile[picturesUrl] = 'uploaded'
 
-def getPicUrlFromItemUrl(itemUrl):
+def postNewPicUrlFromItemUrl(itemUrl):
 	print('item url:')
 	print(itemUrl)
-	browser2 = webdriver.PhantomJS()
-	browser2.get(itemUrl)
-	getPictures(browser2, itemUrl)
-	browser2.quit()
+	import shelve
+	itemUrlFile = shelve.open('newItemUrl')
+	if itemUrlFile[itemUrl] == 'isToday':
+		browser = webdriver.PhantomJS()
+		browser.get(itemUrl)
+		PostNewPicturesUrl(browser, itemUrl)
+		browser.quit()
 
 def getPicFromShop(shopUrl):
 	browser = webdriver.PhantomJS()
@@ -124,62 +125,6 @@ def getPicFromShop(shopUrl):
 
 	shopName = browser.find_element_by_xpath("//span[@class='shop-name']").find_element_by_tag_name('a').text
 	itemUrlList = getItemsUrl(browser)
-	getPicUrlFromItemUrl(itemUrlList, shopName)
+	postNewPicUrlFromItemUrl(itemUrlList, shopName)
 
 	browser.quit()
-
-def getNewItems():
-	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
-	lookMoreClassName = 'item-list-more-btn J_PopRecTrigLink J_NewPoint'
-	browser = webdriver.PhantomJS()
-	browser.get(femalFavalUrl)
-
-	userName = 'tb6196862_2010'
-	password = 'baobao&jinzi0913'
-	browser.find_element_by_id('TPL_username_1').send_keys(userName)
-	browser.find_element_by_id('TPL_password_1').send_keys(password)
-	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
-	#lookMoreClasses = browser.find_elements_by_class_name('J_FavListItem fav-shop clearfix')
-	lookMoreClasses = browser.find_elements_by_link_text('查看更多')
-	#browser.find
-	for lookMore in lookMoreClasses:
-		lookMoreUrl = lookMore.get_attribute('href')
-		print(lookMoreUrl)
-		print('*'*9)
-		browser2 = webdriver.PhantomJS()
-		browser2.get(lookMoreUrl)
-		browser2.find_element_by_id('TPL_username_1').send_keys(userName)
-		browser2.find_element_by_id('TPL_password_1').send_keys(password)
-		browser2.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
-		favList = browser2.find_element_by_xpath("//li[@class='J_FavListItem g-gi-item fav-item']")
-		#favList = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")
-		
-		print(favList.text)
-		browser2.quit()
-
-
-
-
-if __name__ == "__main__":
-
-	FILE_NAME = 'picInf1.csv'
-	with open(FILE_NAME, 'w') as csvfile:
-		fieldnames = ['itemUrl', 'imgBigUrl']
-		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-		writer.writeheader()
-
-	logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
-
-	shopUrl = 'https://wanglinhong168.taobao.com/category-867174786.htm?spm=a1z10.5-c-s.0.0.edd8BF&search=y&categoryp=50008899&scid=867174786'
-	shopUrl2 = 'https://yanerjia.taobao.com/category-529814247.htm?spm=2013.1.0.0.txHE7z&search=y&catName=2016%B6%AC%D7%B0%D0%C2%BF%EE'
-	pool = Pool(4)
-	shopUrlList = [
-		shopUrl,
-		shopUrl2
-	]
-
-	pool.map(getPicFromShop, shopUrlList)
-	#getNewItems()
-
-	# itemUrlList = ['https://item.taobao.com/item.htm?id=540063089204&_u=', 'https://item.taobao.com/item.htm?id=540061720286&_u=']
-	# getPicUrlFromItemUrl(itemUrlList, 'testItemUrlList')

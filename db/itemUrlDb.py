@@ -17,12 +17,30 @@ class Singleton(object):
 			cls._instance = orig.__new__(cls)
 		return cls._instance
 
+class itemUrlDb(Singleton):
+	def __init__(self, dbName):
+		super(itemUrlDb, self).__init__()
+		self.conn = sqlite3.connect(dbName)
+		self.c = self.conn.cursor()
+		self.createTable()
 
-class Rules(Singleton):
-	def __init__(self, fname):
-		super(Rules, self).__init__()
-		self.filename = fname
-		self.d = shelve.open(self.filename)
+	def createTable(self):
+		self.c.execute('''CREATE TABLE lookMoreUrlTable (lookMoreUrl text)''')
+		self.c.execute('''CREATE TABLE ItemUrlTable (ItemUrl text, isNew text)''')
+		self.c.execute('''CREATE TABLE pictureUrlTable (pictureUrl text, isUpload text)''')
+
+	def addItem(self, table, item):
+		pass
+
+	def queryIfItemSaved(self, table, item):
+		pass
+
+	def deleteItem(self, table, item):
+		pass
+
+	def queryAllItems(self, table):
+		pass
+
 
 	def saveRule(self, key, value):
 		# if self.d.has_key(key):
@@ -53,7 +71,6 @@ class Rules(Singleton):
 
 	def deleteElement(self, key):
 		del self.d[key]
-
 
 if __name__ == "__main__":
 	picUrl = 'https://gd1.alicdn.com/imgextra/i3/0/TB10lxmNVXXXXbiXFXXXXXXXXXX_!!0-item_pic.jpg_400x400.jpg'

@@ -2,54 +2,73 @@ import unittest
 from picFromTaobao import *
 from  FindItemUrl import *
 import time
+from Rules import *
 
-class TestStringMethods(unittest.TestCase):
+class TestFindAllShopNewItemUrl(unittest.TestCase):
 
-	def test_upper(self):
-		self.assertEqual('foo'.upper(), 'FOO')
+	def setUp(self):
+		pass
 
-	def test_isupper(self):
-		self.assertTrue('FOO'.isupper())
-		self.assertFalse('Foo'.isupper())
+	def tearDown(self):
+		import shelve
+		lookMoreUrlFile = shelve.open('lookMoreUrlFile')
 
-	def test_split(self):
-		s = 'hello world'
-		self.assertEqual(s.split(), ['hello', 'world'])
-		# check that s.split fails when the separator is not a string
-		with self.assertRaises(TypeError):
-			s.split(2)
+		for i in list(lookMoreUrlFile.keys()):
+			print(i)
+		print(len(list(lookMoreUrlFile.keys())))
 
-class TestFindItemUrl(unittest.TestCase):
+	def test_findAllShopNewItemUrl(self):
+		findAllShopNewItemUrl()
+
+
+class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 
 	def setUp(self):
 		import shelve
-		self.newItemUrlFile = shelve.open('newItemUrl')
+		self.ItemUrlFile = shelve.open('newItemUrl')
 
-	def test_findItemUrl(self):
+	def tearDown(self):
+		self.pictureUrlFile = shelve.open('picturesUrlFile')
+		print('new pictureUrl saved:')
+		print(len(list(self.pictureUrlFile.keys())))
+
+	def test_postNewPicUrlFromItemUrl(self):
 		from multiprocessing import Pool
 		pool = Pool(4)
 
 		start = time.time()
-		allNewItemUrlList = list(self.newItemUrlFile.keys())
+		allNewItemUrlList = list(self.ItemUrlFile.keys())
+		# allNewItemUrlList = []
+		# for itemUrl in allItemUrlList:
+		# 	if self.ItemUrlFile[itemUrl] == 'new':
+		# 		allNewItemUrlList.append(itemUrl)
+
 		print(len(allNewItemUrlList))
 		print(allNewItemUrlList)
-		pool.map(getPicUrlFromItemUrl, allNewItemUrlList)
+		pool.map(postNewPicUrlFromItemUrl, allNewItemUrlList)
 		end = time.time()
 		print('use: ' + str(end - start))
 		self.assertEqual('foo'.upper(), 'FOO')
 
-class TestFindNewItemUrl(unittest.TestCase):
+class TestFindItemsUrl(unittest.TestCase):
 
-	def test_findNewItemUrl(self):
-		shopCollectUrlFile = Rules('ShopCollectUrl')
-		pool = Pool(4)
+	def tearDown(self):
+		self.itemUrlFile = shelve.open('newItemUrl')
+
+		for i in list(self.itemUrlFile.keys()):
+			print(i)
+		print('new newItemUrl saved:')
+		print(len(list(self.itemUrlFile.keys())))
+
+	def test_findItemsUrl(self):
+		lookMoreUrlFile = shelve.open('lookMoreUrlFile')
+		pool = Pool(1)
 
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 
-		allShopNewItemUrlList = shopCollectUrlFile.getAllKeysList()
-		for allShopNewItemUrl in allShopNewItemUrlList:
-			print(allShopNewItemUrl)
-		pool.map(findTodayNewItem, allShopNewItemUrlList)
+		lookMoreUrlList = list(lookMoreUrlFile.keys())
+
+		pool.map(findTodayNewItem, lookMoreUrlList)
 		self.assertEqual('foo'.upper(), 'FOO')
 
 if __name__ == '__main__':
