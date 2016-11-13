@@ -34,6 +34,26 @@ def getCookies():
 	cookies = browser.get_cookies()
 	return browser, cookies
 
+def getShouChangCookies():
+
+	femalFavalUrl = 'https://shoucang.taobao.com/shop_gallery_n.htm?id=36677438&cat=4&sellerId=72768346&tab=0'
+	# browser = webdriver.PhantomJS()
+	browser = webdriver.Firefox()
+	browser.get(femalFavalUrl)
+	userName = 'tb6196862_2010'
+	password = 'baobao&jinzi0913'
+	try:
+		browser.find_element_by_class_name('forget-pwdJ_Quick2Static').send_keys(Keys.ENTER)
+	except NoSuchElementException as e:
+		print('login error')
+
+	browser.find_element_by_id('TPL_username_1').send_keys(userName)
+	browser.find_element_by_id('TPL_password_1').send_keys(password)
+	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
+	print(browser.get_cookies())
+	cookies = browser.get_cookies()
+	browser.quit()
+	return cookies
 
 def findAllShopNewItemUrl():
 	global cookies
@@ -75,21 +95,21 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 	#browser = webdriver.PhantomJS()
 	browser = webdriver.Firefox()
 	#browser.add_cookie(cookies)
-	# browser2.get(lookMoreUrl)
-	# for cookie in cookies:
-	# 	browser2.add_cookie(cookie)
+	#browser.get(lookMoreUrl)
+	for cookie in cookies:
+		browser.add_cookie(cookie)
 	browser.get(lookMoreUrl)
-	userName = 'tb6196862_2010'
-	password = 'baobao&jinzi0913'
-	try:
-		browser.find_element_by_class_name('forget-pwd J_Quick2Static').send_keys(Keys.ENTER)
-	except NoSuchElementException as e:
-		print('login error')
+	# userName = 'tb6196862_2010'
+	# password = 'baobao&jinzi0913'
+	# # try:
+	# 	browser.find_element_by_class_name('forget-pwdJ_Quick2Static').send_keys(Keys.ENTER)
+	# except NoSuchElementException as e:
+	# 	print('login error')
 
-	browser.find_element_by_id('TPL_username_1').send_keys(userName)
-	browser.find_element_by_id('TPL_password_1').send_keys(password)
-	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
-	time.sleep(2)
+	# browser.find_element_by_id('TPL_username_1').send_keys(userName)
+	# browser.find_element_by_id('TPL_password_1').send_keys(password)
+	# browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
+	# time.sleep(2)
 	try:
 		# 找到 上新 按钮
 		shangXin = browser.find_element_by_xpath(
@@ -143,7 +163,7 @@ def findTodayNewItem(lookMoreUrl):
 
 if __name__ == '__main__':
 
-	browser, cookies = getCookies()
+	cookies = getShouChangCookies()
 	print(cookies)
 
 	import pickle

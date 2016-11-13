@@ -52,6 +52,17 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 
 class TestFindItemsUrl(unittest.TestCase):
 
+	def setUp(self):
+		cookies = getShouChangCookies()
+		print('cookies: ')
+		print(cookies)
+		import pickle
+		with open('cookies.pickle', 'wb') as f:
+			pickle.dump(cookies, f)
+		with open('cookies.pickle', 'rb') as f:
+			self.assertEqual(pickle.load(f), cookies)
+
+
 	def tearDown(self):
 		self.itemUrlFile = shelve.open('newItemUrl')
 
