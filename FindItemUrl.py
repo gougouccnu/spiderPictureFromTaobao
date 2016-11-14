@@ -99,17 +99,6 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 	for cookie in cookies:
 		browser.add_cookie(cookie)
 	browser.get(lookMoreUrl)
-	# userName = 'tb6196862_2010'
-	# password = 'baobao&jinzi0913'
-	# # try:
-	# 	browser.find_element_by_class_name('forget-pwdJ_Quick2Static').send_keys(Keys.ENTER)
-	# except NoSuchElementException as e:
-	# 	print('login error')
-
-	# browser.find_element_by_id('TPL_username_1').send_keys(userName)
-	# browser.find_element_by_id('TPL_password_1').send_keys(password)
-	# browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
-	# time.sleep(2)
 	try:
 		# 找到 上新 按钮
 		shangXin = browser.find_element_by_xpath(
@@ -130,26 +119,30 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 		#newItemUrlClassList = browser2.find_elements_by_xpath("//*[starts-with(name(), 'J_FavListItem g-gi-item fav-item fav-item-promotion')]")
 		newItemUrlClassList = browser.find_elements_by_xpath("//div[@class='img-controller-img-box']")
 		# save all the new item url,TODO: save new item by date
-		if len(newItemUrlClassList) >= 1 and shangxinDate.text.startswith('今天'):
+		if len(newItemUrlClassList) >= 1:
+		#if len(newItemUrlClassList) >= 1 and shangxinDate.text.startswith('今天'):
 			newItemCnt = int(shangXin.text.split()[-1], 10)
 			print('begint to find new itemUrl')
+			print(newItemCnt)
 			for i in range(newItemCnt):
 				print('find new itemUrl')
 				newItemUrl = newItemUrlClassList[i].find_element_by_tag_name('a').get_attribute('href')
 				print(newItemUrl)
 				# TODO: save new item url
-				if not newItemUrl in newItemUrlFile.keys():
-					newItemUrlFile[newItemUrl] = 'isToday'
+				# if not newItemUrl in newItemUrlFile:
+				# 	newItemUrlFile[newItemUrl] = 'isToday'
+				# 	print('save item url to local')
+				# else:
+				# 	print('had been saved.')
 		else:
 			print('Today no new item.')
-		browser.quit()
-
 	except NoSuchElementException as e:
 		print('no shangxin')
 		print('except:', e)
-		browser.quit()
 	except IndexError as e:
 		print('except:', e)
+	finally:
+		print('finally quit browser.')
 		browser.quit()
 
 def findTodayNewItem(lookMoreUrl):

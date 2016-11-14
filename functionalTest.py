@@ -3,6 +3,7 @@ from picFromTaobao import *
 from  FindItemUrl import *
 import time
 from Rules import *
+from multiprocessing import Pool
 
 class TestFindAllShopNewItemUrl(unittest.TestCase):
 
@@ -33,8 +34,7 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 		print(len(list(self.pictureUrlFile.keys())))
 
 	def test_postNewPicUrlFromItemUrl(self):
-		from multiprocessing import Pool
-		pool = Pool(4)
+		pool = Pool(2)
 
 		start = time.time()
 		allNewItemUrlList = list(self.ItemUrlFile.keys())
@@ -45,9 +45,9 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 
 		print(len(allNewItemUrlList))
 		print(allNewItemUrlList)
-		pool.map(postNewPicUrlFromItemUrl, allNewItemUrlList)
+		pool.map(postNewPicUrlFromItemUrl, allNewItemUrlList[:20])
 		end = time.time()
-		print('use: ' + str(end - start))
+		#print('use: ' + str(end - start))
 		self.assertEqual('foo'.upper(), 'FOO')
 
 class TestFindItemsUrl(unittest.TestCase):
@@ -61,7 +61,6 @@ class TestFindItemsUrl(unittest.TestCase):
 			pickle.dump(cookies, f)
 		with open('cookies.pickle', 'rb') as f:
 			self.assertEqual(pickle.load(f), cookies)
-
 
 	def tearDown(self):
 		self.itemUrlFile = shelve.open('newItemUrl')
@@ -78,8 +77,9 @@ class TestFindItemsUrl(unittest.TestCase):
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 
 		lookMoreUrlList = list(lookMoreUrlFile.keys())
-
-		pool.map(findTodayNewItem, lookMoreUrlList)
+		partList = lookMoreUrlList[:2]
+		print(len(partList))
+		pool.map(findTodayNewItem, partList)
 		self.assertEqual('foo'.upper(), 'FOO')
 
 if __name__ == '__main__':
