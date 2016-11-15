@@ -22,6 +22,7 @@ class itemUrlDb(Singleton):
 		super(itemUrlDb, self).__init__()
 		self.conn = sqlite3.connect(dbName)
 		self.c = self.conn.cursor()
+		# TODO. has to see if create table
 		#self.createTable()
 
 	def createTable(self):
@@ -31,13 +32,15 @@ class itemUrlDb(Singleton):
 
 	def saveLookMoreUrl(self, lookMoreUrl):
 		self.c.execute("INSERT INTO lookMoreUrlTable VALUES (?)", (lookMoreUrl,))
+		self.conn.commit()
 
 	def queryAllLookMoreUrl(self):
-		self.c.execute("SELECT * FROM lookMoreUrlTable")
+		self.c.execute("SELECT lookMoreUrl FROM lookMoreUrlTable")
 		return self.c.fetchall()
 
 	def addItem(self, itemUrl, isNew):
 		self.c.execute("INSERT INTO ItemUrlTable VALUES (?, ?)", (itemUrl, isNew))
+		self.conn.commit()
 
 	def queryIfItemUrlSaved(self, itemUrl):
 		self.c.execute("SELECT * FROM ItemUrlTable WHERE ItemUrl = '%s'" % itemUrl)
@@ -47,8 +50,28 @@ class itemUrlDb(Singleton):
 		else:
 			return False
 
+	def queryAllTodayItem(self):
+		pass
+
+	def queryIfPicUrlUpload(self, picUrl):
+		self.c.execute("SELECT * FROM pictureUrlTable WHERE pictureUrl = '%s'" % picUrl)
+		#print(self.c.fetchone())
+		if self.c.fetchone() == (picUrl, 'upload'):
+			return True
+		else:
+			return False
+
+	def addPictureUrl(self, pictureUrl):
+		self.c.execute("INSERT INTO pictureUrlTable VALUES (?, ?)", (pictureUrl, 'upload'))
+		self.conn.commit()
+
+	def queryAllPictureUrl(self):
+		self.c.execute("SELECT * FROM pictureUrlTable")
+
+
 	def deleteItem(self, itemUrl):
 		self.c.execute("DELETE FROM ItemUrlTable WHERE ItemUrl = '%s'" % itemUrl)
+		self.conn.commit()
 
 	def queryAllItems(self):
 		self.c.execute("SELECT itemUrl FROM ItemUrlTable")

@@ -27,20 +27,21 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 		import shelve
 		self.ItemUrlFile = shelve.open('newItemUrl')
 
+		self.myDB = itemUrlDb('itemUrlDb')
+
 	def tearDown(self):
-		self.pictureUrlFile = shelve.open('picturesUrlFile')
-		print('new pictureUrl saved:')
-		print(len(list(self.pictureUrlFile.keys())))
+
+		for url in self.myDB.queryAllPictureUrl():
+			print(url)
+		self.myDB.close()
 
 	def test_postNewPicUrlFromItemUrl(self):
 		pool = Pool(2)
 
 		start = time.time()
-		allNewItemUrlList = list(self.ItemUrlFile.keys())
-		# allNewItemUrlList = []
-		# for itemUrl in allItemUrlList:
-		# 	if self.ItemUrlFile[itemUrl] == 'new':
-		# 		allNewItemUrlList.append(itemUrl)
+		allNewItemUrlList = []
+		for item in self.myDB.queryAllTodayItem():
+			allNewItemUrlList.append(item[0])
 
 		print(len(allNewItemUrlList))
 		print(allNewItemUrlList)
@@ -52,19 +53,19 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 class TestFindItemsUrl(unittest.TestCase):
 
 	def setUp(self):
-		# cookies = getShouChangCookies()
-		# print('cookies: ')
-		# print(cookies)
-		# import pickle
-		# with open('cookies.pickle', 'wb') as f:
-		# 	pickle.dump(cookies, f)
-		# with open('cookies.pickle', 'rb') as f:
-		# 	self.assertEqual(pickle.load(f), cookies)
-		#
-		self.myDB = itemUrlDb('itemUrl.db')
-		self.lookMoreUrlList = self.myDB.queryAllLookMoreUrl()
-		for i in self.lookMoreUrlList:
-			print(i)
+		cookies = getShouChangCookies()
+		print('cookies: ')
+		print(cookies)
+		import pickle
+		with open('cookies.pickle', 'wb') as f:
+			pickle.dump(cookies, f)
+		with open('cookies.pickle', 'rb') as f:
+			self.assertEqual(pickle.load(f), cookies)
+
+		self.myDB = itemUrlDb('itemUrlDb')
+		self.lookMoreUrlList = []
+		for i in self.myDB.queryAllLookMoreUrl():
+			self.lookMoreUrlList.append(i[0])
 
 	def tearDown(self):
 		# self.itemUrlFile = shelve.open('newItemUrl')
@@ -78,10 +79,11 @@ class TestFindItemsUrl(unittest.TestCase):
 		print(len(itemList))
 		for i in itemList:
 			print(i)
+		self.myDB.close()
 
 	def test_findItemsUrl(self):
 
-		pool = Pool(2)
+		pool = Pool(1)
 
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 

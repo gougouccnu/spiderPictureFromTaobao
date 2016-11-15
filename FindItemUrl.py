@@ -114,6 +114,7 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 	except NoSuchElementException as e:
 		print('shangXin url not matched')
 		browser.quit()
+		return
 
 	time.sleep(2)
 	# shangxinDate = browser2.find_element_by_xpath("//li[@class='gallery-album-title clearfix']")

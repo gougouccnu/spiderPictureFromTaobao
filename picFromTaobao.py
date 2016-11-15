@@ -17,6 +17,8 @@ import io
 from Rules import *
 from accessBmobPy3 import *
 from Rules import *
+from db.itemUrlDb import itemUrlDb
+
 
 def getItemsUrl(driver):
 	itemUrlList = []
@@ -88,8 +90,7 @@ def getPicturesUrl(driver, itemUrl):
 
 def PostNewPicturesUrl(driver, itemUrl):
 
-	import shelve
-	picturesUrlFile = shelve.open('picturesUrlFile')
+	myDB = itemUrlDb('itemUrlDb')
 	USER_ID = 'JLkR444G'
 	logging.debug('try to get pictures from URL: %s ', itemUrl)
 
@@ -98,26 +99,29 @@ def PostNewPicturesUrl(driver, itemUrl):
 	if picturesUrlList == None:
 		return
 	for picturesUrl in picturesUrlList:
-		if picturesUrl in picturesUrlFile.keys():
-			if picturesUrlFile[picturesUrl] == 'uploaded':
-				logging.debug('had been post to bmob')
-				print('had been post to bmob')
-				return
+
+		if myDB.queryIfPicUrlUpload(picturesUrl):
+
+		# if picturesUrl in picturesUrlFile.keys():
+		# 	if picturesUrlFile[picturesUrl] == 'uploaded':
+			logging.debug('had been post to bmob')
+			print('had been post to bmob')
+			return
 		saveImgToBmob(USER_ID, picturesUrl, itemUrl)
 		# 保存到数据库
 		print('faked post to bmob')
-		picturesUrlFile[picturesUrl] = 'uploaded'
+		#picturesUrlFile[picturesUrl] = 'uploaded'
+		myDB.addPictureUrl(picturesUrl)
 
 def postNewPicUrlFromItemUrl(itemUrl):
 	print('item url:')
 	print(itemUrl)
-	import shelve
-	itemUrlFile = shelve.open('newItemUrl')
-	if itemUrlFile[itemUrl] == 'isToday':
-		browser = webdriver.PhantomJS()
-		browser.get(itemUrl)
-		PostNewPicturesUrl(browser, itemUrl)
-		browser.quit()
+	#if itemUrlFile[itemUrl] == 'isToday':
+	#if myDB.queryIfItemUrlSavedToday(itemUrl):
+	browser = webdriver.PhantomJS()
+	browser.get(itemUrl)
+	PostNewPicturesUrl(browser, itemUrl)
+	browser.quit()
 
 def getPicFromShop(shopUrl):
 	browser = webdriver.PhantomJS()
