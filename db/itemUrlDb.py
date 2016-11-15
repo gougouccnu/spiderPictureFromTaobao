@@ -22,59 +22,45 @@ class itemUrlDb(Singleton):
 		super(itemUrlDb, self).__init__()
 		self.conn = sqlite3.connect(dbName)
 		self.c = self.conn.cursor()
-		self.createTable()
+		#self.createTable()
 
 	def createTable(self):
 		self.c.execute('''CREATE TABLE lookMoreUrlTable (lookMoreUrl text)''')
 		self.c.execute('''CREATE TABLE ItemUrlTable (ItemUrl text, isNew text)''')
 		self.c.execute('''CREATE TABLE pictureUrlTable (pictureUrl text, isUpload text)''')
 
-	def addItem(self, table, item):
-		pass
+	def saveLookMoreUrl(self, lookMoreUrl):
+		self.c.execute("INSERT INTO lookMoreUrlTable VALUES (?)", (lookMoreUrl,))
 
-	def queryIfItemSaved(self, table, item):
-		pass
+	def queryAllLookMoreUrl(self):
+		self.c.execute("SELECT * FROM lookMoreUrlTable")
+		return self.c.fetchall()
 
-	def deleteItem(self, table, item):
-		pass
+	def addItem(self, itemUrl, isNew):
+		self.c.execute("INSERT INTO ItemUrlTable VALUES (?, ?)", (itemUrl, isNew))
 
-	def queryAllItems(self, table):
-		pass
-
-
-	def saveRule(self, key, value):
-		# if self.d.has_key(key):
-		# 	print('save Error:key ' + key + ' exist!')
-		# else:
-		if key in self.d:
-			print('key existed!')
-			logging.debug('key %s existed.', key)
-			return
-		self.d[key] = value
-
-	def loadValue(self, key):
-		#list(self.d.keys())
-		if key in self.d:
-		#if self.d.has_key(key):
-			value = self.d[key]
-			return value
+	def queryIfItemUrlSaved(self, itemUrl):
+		self.c.execute("SELECT * FROM ItemUrlTable WHERE ItemUrl = '%s'" % itemUrl)
+		#print(self.c.fetchone())
+		if self.c.fetchone() == (itemUrl, 'saved'):
+			return True
 		else:
-			print('load Error:key ' + key + ' don\'t exist')
-			logging.debug('save key %s', key)
-			return None
+			return False
 
-	def getAllKeysList(self):
-		return list(self.d.keys())
+	def deleteItem(self, itemUrl):
+		self.c.execute("DELETE FROM ItemUrlTable WHERE ItemUrl = '%s'" % itemUrl)
+
+	def queryAllItems(self):
+		self.c.execute("SELECT itemUrl FROM ItemUrlTable")
+		return self.c.fetchall()
 
 	def close(self):
-		self.d.close()
-
-	def deleteElement(self, key):
-		del self.d[key]
+		self.conn.close()
 
 if __name__ == "__main__":
 	picUrl = 'https://gd1.alicdn.com/imgextra/i3/0/TB10lxmNVXXXXbiXFXXXXXXXXXX_!!0-item_pic.jpg_400x400.jpg'
 
-	rules = Rules("test")
-	rules.saveRule(picUrl, 'saved')
-	print(rules.loadValue(picUrl))
+	myDB = itemUrlDb()
+	item = (picUrl, 'saved')
+	myDB.addItem('ItemUrlTable', picUrl, 'saved')
+	print(myDB.queryIfItemUrlSaved('ItemUrlTable', picUrl))

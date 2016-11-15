@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Rules import *
+from db.itemUrlDb import itemUrlDb
 from picFromTaobao import *
 
 cookies = []
@@ -17,13 +18,13 @@ cookies = []
 def getCookies():
 
 	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
-	# browser = webdriver.PhantomJS()
-	browser = webdriver.Firefox()
+	browser = webdriver.PhantomJS()
+	#browser = webdriver.Firefox()
 	browser.get(femalFavalUrl)
 	userName = 'tb6196862_2010'
 	password = 'baobao&jinzi0913'
 	try:
-		browser.find_element_by_class_name('forget-pwd J_Quick2Static').send_keys(Keys.ENTER)
+		browser.find_element_by_class_name('forget-pwdJ_Quick2Static').send_keys(Keys.ENTER)
 	except NoSuchElementException as e:
 		print('login error')
 
@@ -60,6 +61,7 @@ def findAllShopNewItemUrl():
 	import shelve
 	lookMoreUrlFile = shelve.open('lookMoreUrlFile')
 	allShopNewItemUrlList = []
+	myDB = itemUrlDb('itemUrlDb')
 
 	browser, cookies = getCookies()
 
@@ -75,6 +77,8 @@ def findAllShopNewItemUrl():
 			logging.debug('found %s lookMoreUrl in page %', len(lookMoreClasses), page)
 			print('found ' + str(len(lookMoreClasses)) + ' lookMoreUrl in page ' + str(page))
 			for lookMore in lookMoreClasses:
+				myDB.saveLookMoreUrl(lookMore.get_attribute('href'))
+				# TODO: if url had been saved
 				allShopNewItemUrlList.append(lookMore.get_attribute('href'))
 			# 点击下一页
 			browser.find_element_by_xpath("//a[@class='dpl-paginator-next J_NextPage J_HotPoint']").click()
@@ -85,11 +89,12 @@ def findAllShopNewItemUrl():
 			break
 	browser.quit()
 
-	for allShopNewItemUrl in allShopNewItemUrlList:
-		if not allShopNewItemUrl in lookMoreUrlFile.keys():
-			lookMoreUrlFile[allShopNewItemUrl] = 'saved'
+	# for allShopNewItemUrl in allShopNewItemUrlList:
+	# 	if not allShopNewItemUrl in lookMoreUrlFile.keys():
+	# 		lookMoreUrlFile[allShopNewItemUrl] = 'saved'
 
 def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
+	myDB = itemUrlDb('itemUrlDb')
 	print('lookMoreUrl:')
 	print(lookMoreUrl)
 	#browser = webdriver.PhantomJS()
@@ -134,6 +139,13 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 				# 	print('save item url to local')
 				# else:
 				# 	print('had been saved.')
+				if not myDB.queryIfItemUrlSaved(newItemUrl) == True:
+					myDB.addItem(newItemUrl, 'saved')
+					print('save item url')
+				else:
+					print('had been saved')
+
+
 		else:
 			print('Today no new item.')
 	except NoSuchElementException as e:
