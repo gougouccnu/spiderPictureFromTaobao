@@ -107,11 +107,13 @@ def PostNewPicturesUrl(driver, itemUrl):
 			logging.debug('had been post to bmob')
 			print('had been post to bmob')
 			return
-		saveImgToBmob(USER_ID, picturesUrl, itemUrl)
+		#saveImgToBmob(USER_ID, picturesUrl, itemUrl)
 		# 保存到数据库
 		print('faked post to bmob')
 		#picturesUrlFile[picturesUrl] = 'uploaded'
 		myDB.addPictureUrl(picturesUrl)
+
+	myDB.addItem(itemUrl, 'saved')
 
 def postNewPicUrlFromItemUrl(itemUrl):
 	print('item url:')

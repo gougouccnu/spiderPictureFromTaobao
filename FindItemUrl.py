@@ -97,8 +97,8 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 	myDB = itemUrlDb('itemUrlDb')
 	print('lookMoreUrl:')
 	print(lookMoreUrl)
-	#browser = webdriver.PhantomJS()
-	browser = webdriver.Firefox()
+	browser = webdriver.PhantomJS()
+	#browser = webdriver.Firefox()
 	# 先get，添加cookies后在get，否则报错
 	browser.get(lookMoreUrl)
 	for cookie in cookies:

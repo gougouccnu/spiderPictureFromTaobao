@@ -39,9 +39,7 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 		pool = Pool(2)
 
 		start = time.time()
-		allNewItemUrlList = []
-		for item in self.myDB.queryAllTodayItem():
-			allNewItemUrlList.append(item[0])
+		allNewItemUrlList = self.myDB.queryAllTodayItem()
 
 		print(len(allNewItemUrlList))
 		print(allNewItemUrlList)
@@ -83,11 +81,11 @@ class TestFindItemsUrl(unittest.TestCase):
 
 	def test_findItemsUrl(self):
 
-		pool = Pool(1)
+		pool = Pool(4)
 
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 
-		pool.map(findTodayNewItem, self.lookMoreUrlList[:10])
+		pool.map(findTodayNewItem, self.lookMoreUrlList[:100])
 		self.assertEqual('foo'.upper(), 'FOO')
 
 class TestItemUrlDb(unittest.TestCase):
@@ -98,7 +96,7 @@ class TestItemUrlDb(unittest.TestCase):
 
 	def tearDown(self):
 		self.myDB.deleteItem(self.picUrl)
-		self.myDB.c.execute("DELETE FROM lookMoreUrlTable WHERE lookMoreUrl = '%s'" % self.picUrl)
+		#self.myDB.c.execute("DELETE FROM lookMoreUrlTable WHERE lookMoreUrl = '%s'" % self.picUrl)
 
 	def test_itemUrlDb(self):
 
@@ -107,12 +105,21 @@ class TestItemUrlDb(unittest.TestCase):
 		self.assertEqual(isNew, True)
 
 		itemList = self.myDB.queryAllItems()
-		self.assertEqual(itemList, [(self.picUrl,)])
+		self.assertIn((self.picUrl,), itemList)
+
+		self.myDB.addItem(self.picUrl, 'today')
+		self.assertIn(self.picUrl, self.myDB.queryAllTodayItem())
+
 
 	def test_lookMoreUrl(self):
 		self.myDB.saveLookMoreUrl(self.picUrl)
 		urlList = self.myDB.queryAllLookMoreUrl()
 		self.assertEqual(len(urlList), 1)
+
+	def test_pictureUrlDb(self):
+		self.myDB.addPictureUrl(self.picUrl)
+		self.assertIn(self.picUrl, self.myDB.queryAllPictureUrl())
+		self.assertEqual(self.myDB.queryIfPicUrlUpload(self.picUrl), True)
 
 if __name__ == '__main__':
 	unittest.main()

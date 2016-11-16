@@ -51,7 +51,17 @@ class itemUrlDb(Singleton):
 			return False
 
 	def queryAllTodayItem(self):
-		pass
+		self.c.execute("SELECT * FROM ItemUrlTable WHERE isNew = '%s'" % 'today')
+		#print(self.c.fetchone())
+		itemList = []
+		allList = self.c.fetchall()
+		# TODO: to refactor
+		if allList != None:
+			for value in allList:
+				itemList.append(value[0])
+		return itemList
+
+
 
 	def queryIfPicUrlUpload(self, picUrl):
 		self.c.execute("SELECT * FROM pictureUrlTable WHERE pictureUrl = '%s'" % picUrl)
@@ -67,7 +77,13 @@ class itemUrlDb(Singleton):
 
 	def queryAllPictureUrl(self):
 		self.c.execute("SELECT * FROM pictureUrlTable")
-
+		picUrlList = []
+		allList = self.c.fetchall()
+		# TODO: to refactor
+		if allList != None:
+			for value in allList:
+				picUrlList.append(value[0])
+		return picUrlList
 
 	def deleteItem(self, itemUrl):
 		self.c.execute("DELETE FROM ItemUrlTable WHERE ItemUrl = '%s'" % itemUrl)
