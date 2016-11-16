@@ -120,7 +120,8 @@ def postNewPicUrlFromItemUrl(itemUrl):
 	print(itemUrl)
 	#if itemUrlFile[itemUrl] == 'isToday':
 	#if myDB.queryIfItemUrlSavedToday(itemUrl):
-	browser = webdriver.PhantomJS()
+	#browser = webdriver.PhantomJS()
+	browser = webdriver.Firefox()
 	browser.get(itemUrl)
 	PostNewPicturesUrl(browser, itemUrl)
 	browser.quit()

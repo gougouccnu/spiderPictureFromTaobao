@@ -24,28 +24,21 @@ class TestFindAllShopNewItemUrl(unittest.TestCase):
 class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 
 	def setUp(self):
-		import shelve
-		self.ItemUrlFile = shelve.open('newItemUrl')
-
 		self.myDB = itemUrlDb('itemUrlDb')
 
 	def tearDown(self):
-
 		for url in self.myDB.queryAllPictureUrl():
 			print(url)
 		self.myDB.close()
 
 	def test_postNewPicUrlFromItemUrl(self):
-		pool = Pool(2)
+		pool = Pool(4)
 
-		start = time.time()
 		allNewItemUrlList = self.myDB.queryAllTodayItem()
 
 		print(len(allNewItemUrlList))
 		print(allNewItemUrlList)
-		pool.map(postNewPicUrlFromItemUrl, allNewItemUrlList[:20])
-		end = time.time()
-		#print('use: ' + str(end - start))
+		pool.map(postNewPicUrlFromItemUrl, allNewItemUrlList[:100])
 		self.assertEqual('foo'.upper(), 'FOO')
 
 class TestFindItemsUrl(unittest.TestCase):

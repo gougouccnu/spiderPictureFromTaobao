@@ -51,7 +51,8 @@ class itemUrlDb(Singleton):
 			return False
 
 	def queryAllTodayItem(self):
-		self.c.execute("SELECT * FROM ItemUrlTable WHERE isNew = '%s'" % 'today')
+		# TODO: saved for test,must change to upload in release vision
+		self.c.execute("SELECT * FROM ItemUrlTable WHERE isNew = '%s'" % 'saved')
 		#print(self.c.fetchone())
 		itemList = []
 		allList = self.c.fetchall()
