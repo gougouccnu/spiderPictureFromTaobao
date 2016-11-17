@@ -58,27 +58,30 @@ class TestFindItemsUrl(unittest.TestCase):
 		for i in self.myDB.queryAllLookMoreUrl():
 			self.lookMoreUrlList.append(i[0])
 
-	def tearDown(self):
-		# self.itemUrlFile = shelve.open('newItemUrl')
-		#
-		# for i in list(self.itemUrlFile.keys()):
-		# 	print(i)
-		# print('new newItemUrl saved:')
-		# print(len(list(self.itemUrlFile.keys())))
 
+	def tearDown(self):
+		#clear data
 		itemList = self.myDB.queryAllItems()
-		print(len(itemList))
 		for i in itemList:
 			print(i)
+			self.myDB.deleteItem(i)
+
+		itemPicUrlList = self.myDB.queryAllPictureUrl()
+		for i in itemPicUrlList:
+			print(i)
+			self.myDB.deletePictureUrl(i)
+		print(len(itemList))
+		print(len(itemPicUrlList))
+
 		self.myDB.close()
 
 	def test_findItemsUrl(self):
 
-		pool = Pool(4)
+		pool = Pool(1)
 
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 
-		pool.map(findTodayNewItem, self.lookMoreUrlList[:100])
+		pool.map(findTodayNewItem, self.lookMoreUrlList[:4])
 		self.assertEqual('foo'.upper(), 'FOO')
 
 class TestItemUrlDb(unittest.TestCase):
@@ -89,7 +92,6 @@ class TestItemUrlDb(unittest.TestCase):
 
 	def tearDown(self):
 		self.myDB.deleteItem(self.picUrl)
-		#self.myDB.c.execute("DELETE FROM lookMoreUrlTable WHERE lookMoreUrl = '%s'" % self.picUrl)
 
 	def test_itemUrlDb(self):
 
@@ -98,7 +100,7 @@ class TestItemUrlDb(unittest.TestCase):
 		self.assertEqual(isNew, True)
 
 		itemList = self.myDB.queryAllItems()
-		self.assertIn((self.picUrl,), itemList)
+		self.assertIn(self.picUrl, itemList)
 
 		self.myDB.addItem(self.picUrl, 'today')
 		self.assertIn(self.picUrl, self.myDB.queryAllTodayItem())

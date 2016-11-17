@@ -97,8 +97,8 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 	myDB = itemUrlDb('itemUrlDb')
 	print('lookMoreUrl:')
 	print(lookMoreUrl)
-	browser = webdriver.PhantomJS()
-	#browser = webdriver.Firefox()
+	#browser = webdriver.PhantomJS()
+	browser = webdriver.Firefox()
 	# 先get，添加cookies后在get，否则报错
 	browser.get(lookMoreUrl)
 	for cookie in cookies:
@@ -134,19 +134,28 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 				print('find new itemUrl')
 				newItemUrl = newItemUrlClassList[i].find_element_by_tag_name('a').get_attribute('href')
 				print(newItemUrl)
+
+				newItemPicUrl = newItemUrlClassList[i].find_element_by_tag_name('a').find_element_by_tag_name('img').get_attribute('src')
+
+				#newItemPicUrl = newItemUrlClassList[i].find_element_by_class_name('img-controller-img').get_attribute('src')
+
+				print(newItemPicUrl)
 				# TODO: save new item url
 				# if not newItemUrl in newItemUrlFile:
 				# 	newItemUrlFile[newItemUrl] = 'isToday'
 				# 	print('save item url to local')
 				# else:
 				# 	print('had been saved.')
-				if not myDB.queryIfItemUrlSaved(newItemUrl) == True:
+				if not myDB.queryIfItemUrlSaved(newItemUrl) == True and newItemPicUrl != None:
 					myDB.addItem(newItemUrl, 'saved')
 					print('save item url')
+					# upload to bmob
+					#saveImgToBmob('JLkR444G', newItemPicUrl, newItemUrl)
+					print('faked post to bmob')
+					#save item pic url
+					myDB.addPictureUrl(newItemPicUrl)
 				else:
 					print('had been saved')
-
-
 		else:
 			print('Today no new item.')
 	except NoSuchElementException as e:

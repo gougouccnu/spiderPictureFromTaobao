@@ -86,13 +86,23 @@ class itemUrlDb(Singleton):
 				picUrlList.append(value[0])
 		return picUrlList
 
+	def deletePictureUrl(self, picUrl):
+		self.c.execute("DELETE FROM pictureUrlTable WHERE pictureUrl = '%s'" % picUrl)
+		self.conn.commit()
+
+
 	def deleteItem(self, itemUrl):
 		self.c.execute("DELETE FROM ItemUrlTable WHERE ItemUrl = '%s'" % itemUrl)
 		self.conn.commit()
 
 	def queryAllItems(self):
 		self.c.execute("SELECT itemUrl FROM ItemUrlTable")
-		return self.c.fetchall()
+		itemList = []
+		allList = self.c.fetchall()
+		if allList != None:
+			for value in allList:
+				itemList.append(value[0])
+		return itemList
 
 	def close(self):
 		self.conn.close()
