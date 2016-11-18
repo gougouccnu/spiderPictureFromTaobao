@@ -150,10 +150,12 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 					myDB.addItem(newItemUrl, 'saved')
 					print('save item url')
 					# upload to bmob
-					#saveImgToBmob('JLkR444G', newItemPicUrl, newItemUrl)
-					print('faked post to bmob')
-					#save item pic url
-					myDB.addPictureUrl(newItemPicUrl)
+					if saveImgToBmob('JLkR444G', newItemPicUrl, newItemUrl):
+						#print('faked post to bmob')
+						#save item pic url
+						myDB.addPictureUrl(newItemPicUrl, "upload")
+					else:
+						myDB.addPictureUrl(newItemPicUrl, "notUpload")
 				else:
 					print('had been saved')
 		else:

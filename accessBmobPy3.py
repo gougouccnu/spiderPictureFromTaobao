@@ -4,6 +4,7 @@
 import http.client
 import json
 import logging
+import socket
 import urllib
 
 
@@ -13,24 +14,39 @@ def getFromBmob(url, table, objectId):
 			   "X-Bmob-REST-API-Key": "386d24d4a17d00e09208c8f3ddc1a17e"}
 	req = urllib.request.Request(urls, None, headers)
 	print('request full url: ' + req.full_url)
-	response = urllib.request.urlopen(req)
-	print(response.read())
-	print('****')
-	print(response.geturl())
-	print(response.info())
-
+	#
+	try:
+		response = urllib.request.urlopen(req, timeout=3)
+		print(response.read())
+		print('****')
+		print(response.geturl())
+		print(response.info())
+	except http.client.HTTPException as e:
+		print(e)
 
 def postToBmob(url, table, data):
-	connection = http.client.HTTPSConnection(url)
-	connection.connect()
-	connection.request('POST', '/1/classes' + '/' + table, data,
-					   {"X-Bmob-Application-Id": "b78b5e674bac32a880a7b65c36531534",
-						"X-Bmob-REST-API-Key": "386d24d4a17d00e09208c8f3ddc1a17e",
-						"Content-Type": "application/json"})
-	result = connection.getresponse().read().decode()
-	print('POST DATA TO BMOB INFO: ' + result)
-	# check if post data success
-	logging.debug('post to bmob info: %s ', result)
+	try:
+		connection = http.client.HTTPSConnection(url, timeout=3)
+		connection.connect()
+		connection.request('POST', '/1/classes' + '/' + table, data,
+						   {"X-Bmob-Application-Id": "b78b5e674bac32a880a7b65c36531534",
+							"X-Bmob-REST-API-Key": "386d24d4a17d00e09208c8f3ddc1a17e",
+							"Content-Type": "application/json"})
+		result = connection.getresponse().read().decode()
+		print('POST DATA TO BMOB INFO: ' + result)
+		# check if post data success
+		if result.startswith('Created'):
+			logging.debug('post to bmob info: %s ', result)
+			return True
+		else:
+			logging.debug('post to bmob error')
+			return False
+	except http.client.HTTPException as e:
+		print('post to bmob error')
+		return False
+	except socket.timeout as e:
+		print('post to bmob error')
+		return False
 
 
 if __name__ == "__main__":

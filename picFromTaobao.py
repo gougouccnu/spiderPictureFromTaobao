@@ -63,7 +63,10 @@ def saveImgToBmob(USER_ID, imgBigUrl, itemUrl):
 		"user":{"__type":"Pointer","className":"_User","objectId":USER_ID},
 		"starter":{"__type":"Pointer","className":"_User","objectId":"none"}
 		})
-	postToBmob(url, table, totalData)
+	if postToBmob(url, table, totalData):
+		return True
+	else:
+		return False
 
 def getPicturesUrl(driver, itemUrl):
 	picturesUrlList = []

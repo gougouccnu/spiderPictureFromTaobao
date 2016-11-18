@@ -63,12 +63,12 @@ class TestFindItemsUrl(unittest.TestCase):
 		#clear data
 		itemList = self.myDB.queryAllItems()
 		for i in itemList:
-			print(i)
+			#print(i)
 			self.myDB.deleteItem(i)
 
 		itemPicUrlList = self.myDB.queryAllPictureUrl()
 		for i in itemPicUrlList:
-			print(i)
+			#print(i)
 			self.myDB.deletePictureUrl(i)
 		print(len(itemList))
 		print(len(itemPicUrlList))
@@ -77,11 +77,11 @@ class TestFindItemsUrl(unittest.TestCase):
 
 	def test_findItemsUrl(self):
 
-		pool = Pool(1)
+		pool = Pool(4)
 
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 
-		pool.map(findTodayNewItem, self.lookMoreUrlList[:4])
+		pool.map(findTodayNewItem, self.lookMoreUrlList)
 		self.assertEqual('foo'.upper(), 'FOO')
 
 class TestItemUrlDb(unittest.TestCase):

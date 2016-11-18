@@ -72,8 +72,8 @@ class itemUrlDb(Singleton):
 		else:
 			return False
 
-	def addPictureUrl(self, pictureUrl):
-		self.c.execute("INSERT INTO pictureUrlTable VALUES (?, ?)", (pictureUrl, 'upload'))
+	def addPictureUrl(self, pictureUrl, isUpload):
+		self.c.execute("INSERT INTO pictureUrlTable VALUES (?, ?)", (pictureUrl, isUpload))
 		self.conn.commit()
 
 	def queryAllPictureUrl(self):
