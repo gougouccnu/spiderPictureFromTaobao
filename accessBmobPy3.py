@@ -16,7 +16,7 @@ def getFromBmob(url, table, objectId):
 	print('request full url: ' + req.full_url)
 	#
 	try:
-		response = urllib.request.urlopen(req, timeout=3)
+		response = urllib.request.urlopen(req, timeout=30)
 		print(response.read())
 		print('****')
 		print(response.geturl())
@@ -26,7 +26,7 @@ def getFromBmob(url, table, objectId):
 
 def postToBmob(url, table, data):
 	try:
-		connection = http.client.HTTPSConnection(url, timeout=3)
+		connection = http.client.HTTPSConnection(url)
 		connection.connect()
 		connection.request('POST', '/1/classes' + '/' + table, data,
 						   {"X-Bmob-Application-Id": "b78b5e674bac32a880a7b65c36531534",
@@ -43,6 +43,7 @@ def postToBmob(url, table, data):
 			return False
 	except http.client.HTTPException as e:
 		print('post to bmob error')
+		print(e)
 		return False
 	except socket.timeout as e:
 		print('post to bmob error')

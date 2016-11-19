@@ -138,3 +138,13 @@ def getPicFromShop(shopUrl):
 	postNewPicUrlFromItemUrl(itemUrlList, shopName)
 
 	browser.quit()
+
+if __name__ == "__main__":
+	url = 'api.bmob.cn'
+	table = 'picInf'
+	newPic = {"picUrl": "https://gd1.alicdn.com/imgextra/i3/0/TB10lxmNVXXXXbiXFXXXXXXXXXX_!!0-item_pic.jpg_400x400.jpg"}
+	data = json.dumps(newPic)
+	imgItemUrl = ''
+	itemUrl = ''
+
+	saveImgToBmob('JLkR444G', imgItemUrl, itemUrl)
