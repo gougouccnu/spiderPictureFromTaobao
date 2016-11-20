@@ -18,8 +18,8 @@ cookies = []
 def getCookies():
 
 	femalFavalUrl = 'https://shoucang.taobao.com/shop_collect_list_n.htm?spm=a1z0k.6846577.0.0.89UMIb&startRow=60&type=9&value=0%2C10000000000&tab=0&keyword=&t=1478331705580'
-	browser = webdriver.PhantomJS()
-	#browser = webdriver.Firefox()
+	#browser = webdriver.PhantomJS()
+	browser = webdriver.Firefox()
 	browser.get(femalFavalUrl)
 	userName = 'tb6196862_2010'
 	password = 'baobao&jinzi0913'
@@ -38,16 +38,20 @@ def getCookies():
 def getShouChangCookies():
 
 	femalFavalUrl = 'https://shoucang.taobao.com/shop_gallery_n.htm?id=36677438&cat=4&sellerId=72768346&tab=0'
-	# browser = webdriver.PhantomJS()
+	#browser = webdriver.PhantomJS()
 	browser = webdriver.Firefox()
+	#browser.set_window_size(1124, 850)
 	browser.get(femalFavalUrl)
+	time.sleep(3)
 	userName = 'tb6196862_2010'
 	password = 'baobao&jinzi0913'
 	try:
 		browser.find_element_by_class_name('forget-pwdJ_Quick2Static').send_keys(Keys.ENTER)
 	except NoSuchElementException as e:
 		print('login error')
-
+	field = browser.find_element_by_id('TPL_username_1')
+	if field.is_displayed():
+		print('displayed')
 	browser.find_element_by_id('TPL_username_1').send_keys(userName)
 	browser.find_element_by_id('TPL_password_1').send_keys(password)
 	browser.find_element_by_id('J_SubmitStatic').send_keys(Keys.ENTER)
@@ -57,14 +61,9 @@ def getShouChangCookies():
 	return cookies
 
 def findAllShopNewItemUrl():
-	global cookies
-	import shelve
-	lookMoreUrlFile = shelve.open('lookMoreUrlFile')
 	allShopNewItemUrlList = []
 	myDB = itemUrlDb('itemUrlDb')
-
 	browser, cookies = getCookies()
-
 
 	for page in range(100):
 		# scroll down to bottom
@@ -89,11 +88,7 @@ def findAllShopNewItemUrl():
 			break
 	browser.quit()
 
-	# for allShopNewItemUrl in allShopNewItemUrlList:
-	# 	if not allShopNewItemUrl in lookMoreUrlFile.keys():
-	# 		lookMoreUrlFile[allShopNewItemUrl] = 'saved'
-
-def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
+def saveTodayNewItemUrl(lookMoreUrl, cookies):
 	myDB = itemUrlDb('itemUrlDb')
 	print('lookMoreUrl:')
 	print(lookMoreUrl)
@@ -140,17 +135,11 @@ def saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies):
 				#newItemPicUrl = newItemUrlClassList[i].find_element_by_class_name('img-controller-img').get_attribute('src')
 
 				print(newItemPicUrl)
-				# TODO: save new item url
-				# if not newItemUrl in newItemUrlFile:
-				# 	newItemUrlFile[newItemUrl] = 'isToday'
-				# 	print('save item url to local')
-				# else:
-				# 	print('had been saved.')
 				if not myDB.queryIfItemUrlSaved(newItemUrl) == True and newItemPicUrl != None:
 					myDB.addItem(newItemUrl, 'saved')
 					print('save item url')
 					# upload to bmob
-					if saveImgToBmob('JLkR444G', newItemPicUrl, newItemUrl):
+					if savePictureUrlToBmob('JLkR444G', newItemPicUrl, newItemUrl):
 						#print('faked post to bmob')
 						#save item pic url
 						myDB.addPictureUrl(newItemPicUrl, "upload")
@@ -176,7 +165,7 @@ def findTodayNewItem(lookMoreUrl):
 	with open('cookies.pickle', 'rb') as f:
 		cookies = pickle.load(f)
 
-	saveTodayNewItemUrl(lookMoreUrl, newItemUrlFile, cookies)
+	saveTodayNewItemUrl(lookMoreUrl, cookies)
 
 if __name__ == '__main__':
 

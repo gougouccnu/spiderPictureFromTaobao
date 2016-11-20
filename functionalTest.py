@@ -31,7 +31,7 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 			print(url)
 		self.myDB.close()
 
-	def test_postNewPicUrlFromItemUrl(self):
+	def _test_postNewPicUrlFromItemUrl(self):
 		pool = Pool(4)
 
 		allNewItemUrlList = self.myDB.queryAllTodayItem()
@@ -41,7 +41,7 @@ class TestPostNewPicUrlFromItemUrl(unittest.TestCase):
 		pool.map(postNewPicUrlFromItemUrl, allNewItemUrlList[:100])
 		self.assertEqual('foo'.upper(), 'FOO')
 
-class TestFindItemsUrl(unittest.TestCase):
+class TestFindItemsAndPictureUrl(unittest.TestCase):
 
 	def setUp(self):
 		cookies = getShouChangCookies()
@@ -77,14 +77,13 @@ class TestFindItemsUrl(unittest.TestCase):
 
 	def test_findItemsUrl(self):
 
-		pool = Pool(4)
-
+		pool = Pool(1)
 		logging.basicConfig(filename='allShopNewItemUrl.log', filemode='w', level=logging.DEBUG)
 
-		pool.map(findTodayNewItem, self.lookMoreUrlList)
+		pool.map(findTodayNewItem, self.lookMoreUrlList[:4])
 		self.assertEqual('foo'.upper(), 'FOO')
 
-class TestItemUrlDb(unittest.TestCase):
+class TestDatebase(unittest.TestCase):
 
 	def setUp(self):
 		self.picUrl = 'https://gd1.alicdn.com/imgextra/i3/0/TB10lxmNVXXXXbiXFXXXXXXXXXX_!!0-item_pic.jpg_400x400.jpg'
@@ -109,7 +108,7 @@ class TestItemUrlDb(unittest.TestCase):
 	def test_lookMoreUrl(self):
 		self.myDB.saveLookMoreUrl(self.picUrl)
 		urlList = self.myDB.queryAllLookMoreUrl()
-		self.assertEqual(len(urlList), 1)
+		self.assertIn((self.picUrl, ), urlList)
 
 	def test_pictureUrlDb(self):
 		self.myDB.addPictureUrl(self.picUrl)

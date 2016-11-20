@@ -53,7 +53,7 @@ def saveImgUrlToCsv(FILE_NAME, itemUrl, imgBigSrc):
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		writer.writerow({'itemUrl': itemUrl, 'imgBigUrl': imgBigSrc})
 				
-def saveImgToBmob(USER_ID, imgBigUrl, itemUrl):
+def savePictureUrlToBmob(USER_ID, imgBigUrl, itemUrl):
 	url = 'api.bmob.cn'
 	table = 'picInf'
 	
@@ -147,4 +147,4 @@ if __name__ == "__main__":
 	imgItemUrl = ''
 	itemUrl = ''
 
-	saveImgToBmob('JLkR444G', imgItemUrl, itemUrl)
+	savePictureUrlToBmob('JLkR444G', imgItemUrl, itemUrl)

@@ -47,6 +47,7 @@ def postToBmob(url, table, data):
 		return False
 	except socket.timeout as e:
 		print('post to bmob error')
+		print(e)
 		return False
 
 
